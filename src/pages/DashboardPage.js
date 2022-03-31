@@ -1,3 +1,8 @@
+
+import database from '../firebase.js';
+// import { getDatabase, collection, getDocs} from 'firebase/database';
+import { getDatabase, ref, child, get } from "firebase/database";
+
 import { AnnouncementCard, TodosCard } from 'components/Card';
 import HorizontalAvatarList from 'components/HorizontalAvatarList';
 import MapWithBubbles from 'components/MapWithBubbles';
@@ -50,7 +55,25 @@ const lastWeek = new Date(
   today.getMonth(),
   today.getDate() - 7,
 );
+// const dbRef = 
+const db = database;
+console.log("hoooo"+db)
 
+
+const dbRef = ref(db);
+get(child(dbRef, `prediction`)).then((snapshot) => {
+  if (snapshot.exists()) {
+    console.log(snapshot.val());
+  } else {
+    console.log("No data available");
+  }
+}).catch((error) => {
+  console.error(error);
+});
+
+
+
+//////--------------------------------------------------------------------------
 class DashboardPage extends React.Component {
   componentDidMount() {
     // this is needed, because InfiniteCalendar forces window scroll
