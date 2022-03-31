@@ -111,7 +111,8 @@ class DashboardPage extends React.Component {
     prediction: [],
     section1val : 'loading..',
     section2val : 'loading..',
-    section3val : 'loading..'
+    section3val : 'loading..',
+    section4val : 'loading..'
   };
  
   getData = () => {
@@ -147,10 +148,10 @@ class DashboardPage extends React.Component {
       var len = activityList.length
    
       if(timeList[len-1] !== undefined){
-      //update section1val to current activity name
+      //section1val - update to current activity name
       this.setState({section1val: activityList[len-1]});
      
-      //check same activity + update section2val to duration
+      //section2val - check same activity + update duration
       var cou = 0;
       for(var i=1; i<=len; i++){
         if(activityList[len-1]===activityList[len-1-i]){
@@ -167,10 +168,12 @@ class DashboardPage extends React.Component {
       else{timeDiff = timeDifference(false, timeList[len-1-cou], timeList[len-1]);}
       this.setState({section2val: timePretty(timeDiff)});
       
-      //determine warning message
-      var frfr = messageBanner(timeDiff, activityList[len-1]);
-      console.log(frfr);
+      //section3val - determine warning message
       this.setState({section3val:messageBanner(timeDiff, activityList[len-1])});
+
+      //section4val - bg color of message messageBanner
+      var isGoodPosture = checkPosture(activityList[len-1]);
+      this.setState({section4val: bgColorFromPosture(isGoodPosture)});
       }
 
       
@@ -190,6 +193,7 @@ class DashboardPage extends React.Component {
         breadcrumbs={[{ name: 'Dashboard', active: true }]}
       >
 
+{/* box#1 */}
         <Row>
         <Col md={12} sm={12} xs={12} className="mb-3">
           <Card className="flex-row">
@@ -212,7 +216,7 @@ class DashboardPage extends React.Component {
                   <Row>
                     <Col md={10} sm={10} xs={10} className="m-5">
                       <IconWidget
-                        bgColor={'danger'}
+                        bgColor={this.state.section4val}
                         icon={MdThumbDown}
                         title={<h3 className="text-center"> <strong> {this.state.section3val} </strong> </h3>}
                         subtitle={<h4 className="text-center">You should try standing up and relax for 5 minutes.</h4>}
@@ -232,7 +236,9 @@ class DashboardPage extends React.Component {
           </Card>
         </Col>
         </Row>
-        
+{/* end of box#1 */}  
+
+{/* box#2 */}
         <Row> 
         <Col lg="12" md="12" sm="12" xs="12">
         <Card>
@@ -265,7 +271,9 @@ class DashboardPage extends React.Component {
         </Card> 
         </Col>
         </Row>
+{/* end of box#2 */} 
 
+{/* box#3 */}
         <Row>
         <Col xl={6} lg={12} md={12}>
           <Card>
@@ -310,7 +318,7 @@ class DashboardPage extends React.Component {
         </Card> 
         </Col>
         </Row>
-
+{/* end of box#3 */} 
         <Row>
         <Col xl={6} lg={12} md={12}>
             <Card className="mb-3">
@@ -580,6 +588,20 @@ const genLoadData = () => {
     return(message);
   }
 
+  function checkPosture(currentActivity){
+    if(currentActivity.toLowerCase().includes("hunch")){
+      return (false);
+    }
+    else{return(true);}
+  }
+
+  function bgColorFromPosture(isGood){
+    if(isGood){
+      return("success");  
+    }
+    else{
+    return("danger");}
+  }
 
 
 export default DashboardPage;
