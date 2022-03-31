@@ -111,6 +111,7 @@ const lastWeek = new Date(
   today.getDate() - 7,
 );
 
+
 class DashboardPage extends React.Component {
     constructor(props) {
         super(props);
@@ -127,10 +128,12 @@ class DashboardPage extends React.Component {
     rSelected: null,
     cSelected: [],
     prediction: [],
-    section1val : 'loading..'
+    section1val : 'loading..',
+    section2val : 'loading..'
   };
-  
+ 
   getData = () => {
+  
     const prediction_array = get(child(dbRef, `prediction`)).then((snapshot) => {
         if (snapshot.exists()) {
             console.log("im snapshot");
@@ -151,7 +154,6 @@ class DashboardPage extends React.Component {
     activity_list = list.map(item => item.activity);
     date_list = list.map(item => item.date);
     time_list = list.map(item => item.time);
-        
         } 
         else {
           console.log("No data available");
@@ -160,22 +162,32 @@ class DashboardPage extends React.Component {
         console.error(error);
       });
 
-    //update section1 value
-      var activity_list_len = activity_list.length
-      // this.refs.section1.innerHTML = activity_list[activity_list_len-1];
-
-    //check same activity
-    var i = 1;
-    var activityDuration=0;
-      // while(activity_list[activity_list_len-i]==activity_list[activity_list_len-i-1]){
-      //   activityDuration += (time_list[activity_list_len-i]-time_list[activity_list_len-i]);
-      //   i++;
-      // }
-    i = 1;
-    // this.refs.myid.innerHTML = activityDuration;
-console.log("this is num"+ activityDuration)
+      var len = activity_list.length
+    //update section1val to current activity name
+     if(activity_list[len-1]!=""){
+      this.setState({section1val: activity_list[len-1]});
+     }
+     
+    //check same activity + update section2val to duration
+      if(time_list[len-1] != undefined){
+        var cou = 0;
+        for(var i=1; i<=len; i++){
+          if(activity_list[len-1]==activity_list[len-1-i]){
+            cou = i;
+          }
+          else{i=len}
+        }
+        const current = new Date();
+        const timeNow = current.getSeconds()+current.getMinutes()*60+current.getHours()*3600;
+        if(cou==0){
+          this.setState({section2val: timeDifference(true, timeNow, time_list[len-1])});
+        }
+        else{this.setState({section2val: timeDifference(false, time_list[len-1-cou], time_list[len-1])});}
+      }
 
   }
+
+  
 
   render() {
     const primaryColor = getColor('primary');
@@ -198,13 +210,11 @@ console.log("this is num"+ activityDuration)
                     />
                     <CardTitle>
                       <h4 className="text-center">
-                        <strong>You have been :</strong>
+                        <strong>Current Activity :</strong>
                       </h4>
                     </CardTitle>
-                      <h2 class="text-center" id="activity_val" ref="section1">{this.state.section1val}
-                      </h2>
-                      <h4 class="text-center">for 4 hours</h4>
-                    {/* </CardText> */}
+                      <h2 className="text-center" id="activityName">{this.state.section1val}</h2>
+                      <h4 className="text-center" id="timeDuration">{this.state.section2val}</h4>
                 </Col>
                 
                 <Col md={8} sm={6} xs={6} className="m-5">
@@ -213,8 +223,8 @@ console.log("this is num"+ activityDuration)
                       <IconWidget
                         bgColor={'danger'}
                         icon={MdThumbDown}
-                        title={<h3 class="text-center"> <strong> Sit too long </strong> </h3>}
-                        subtitle={<h4 class="text-center">You should try standing up and relax for 5 minutes.</h4>}
+                        title={<h3 className="text-center"> <strong> Sit too long </strong> </h3>}
+                        subtitle={<h4 className="text-center">You should try standing up and relax for 5 minutes.</h4>}
                       />
                       <Card className="flex">
                         <CardBody>
@@ -301,8 +311,8 @@ console.log("this is num"+ activityDuration)
             <IconWidget
               bgColor={'success'}
               icon={MdLightbulbOutline}
-              title={<h4 class="text-center"> <strong> Nice posture! </strong> </h4>}
-              subtitle={<h5 class="text-center">  You did good today  </h5>}
+              title={<h4 className="text-center"> <strong> Nice posture! </strong> </h4>}
+              subtitle={<h5 className="text-center">  You did good today  </h5>}
           />
           </Col>
           </CardBody>
@@ -535,4 +545,30 @@ const genLoadData = () => {
     }
   }
 
+  function timeDifference(now, compare, latest){
+    var latestSeconds = (parseInt(latest[0].concat(latest[1]))*3600)+(parseInt(latest[3].concat(latest[4]))*60)+(parseInt(latest[6].concat(latest[7])));
+    var timeDiff;
+    if(now){
+      timeDiff = compare - latestSeconds
+      console.log("in now");
+      console.log(compare);
+      console.log("in now f");
+      console.log(timeDiff);
+    }
+    else{console.log("in else");
+      var compareSeconds = (parseInt(compare[0].concat(compare[1]))*3600)+(parseInt(compare[3].concat(compare[4]))*60)+(parseInt(compare[6].concat(compare[7])));
+      timeDiff = latestSeconds - compareSeconds;
+    }
+    console.log("what wrg"+timeDiff);
+    // var timeDiff =4203; //1h 10min 3sec
+    if(timeDiff<60){
+      return("Duration: "+timeDiff+"s");
+    }
+    else if(timeDiff<(60*60)){
+      return("Duration: "+Math.floor(timeDiff/60)+"m"+timeDiff%60+"s");
+    }
+    else if(timeDiff<(24*60*60)){
+      return("Duration: "+Math.floor(timeDiff/3600)+"h"+Math.floor((timeDiff%3600)/60)+"m"+timeDiff%60+"s")
+    }
+  }
 export default DashboardPage;
