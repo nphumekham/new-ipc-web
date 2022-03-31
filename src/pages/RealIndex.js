@@ -1,4 +1,3 @@
-
 import database from '../firebase.js';
 import { getDatabase, ref, child, get } from "firebase/database";
 
@@ -65,32 +64,14 @@ import { getColor } from 'utils/colors';
 import firebase from '../firebase.js';
 import ButtonPage from 'pages/ButtonPage';
 
+//declare database
+const db = database;
+const dbRef = ref(db);
 
 var list = [];
-var activity_list = [];
-var date_list = [];
-var time_list = [];
-
-const db = database;
-console.log("hoooo"+db)
-
-
-const dbRef = ref(db);
-const prediction_array = get(child(dbRef, `prediction`)).then((snapshot) => {
-  if (snapshot.exists()) {
-      console.log("im snapshot");
-    console.log(snapshot.val());
-  } else {
-    console.log("No data available");
-  }
-}).catch((error) => {
-  console.error(error);
-});
-
-var activity_list = [];
-var date_list = [];
-var time_list = [];
-var sameActivityAsPrev = false;
+var activityList = [];
+var dateList = [];
+var timeList = [];
 const Period = Array.from(Array(20).keys())
 
 
@@ -129,7 +110,8 @@ class DashboardPage extends React.Component {
     cSelected: [],
     prediction: [],
     section1val : 'loading..',
-    section2val : 'loading..'
+    section2val : 'loading..',
+    section3val : 'loading..'
   };
  
   getData = () => {
@@ -139,21 +121,21 @@ class DashboardPage extends React.Component {
             console.log("im snapshot");
           console.log(snapshot.val());
         
-          let prediction_val = snapshot.val();
-          let new_prediction = [];
-          for (let imu_sen in prediction_val) {
-            new_prediction.push({
-            activity: prediction_val[imu_sen].activity,
-            time: prediction_val[imu_sen].time,
-            date: prediction_val[imu_sen].date,
+          let predictionVal = snapshot.val();
+          let predictionArray = [];
+          for (let i in predictionVal) {
+            predictionArray.push({
+            activity: predictionVal[i].activity,
+            time: predictionVal[i].time,
+            date: predictionVal[i].date,
             });
-            this.setState({ prediction: new_prediction });
+            this.setState({ prediction: predictionArray });
           }       
     // store each column of prediction      
     list = this.state.prediction
-    activity_list = list.map(item => item.activity);
-    date_list = list.map(item => item.date);
-    time_list = list.map(item => item.time);
+    activityList = list.map(item => item.activity);
+    dateList = list.map(item => item.date);
+    timeList = list.map(item => item.time);
         } 
         else {
           console.log("No data available");
@@ -162,28 +144,37 @@ class DashboardPage extends React.Component {
         console.error(error);
       });
 
-      var len = activity_list.length
-    //update section1val to current activity name
-     if(activity_list[len-1]!=""){
-      this.setState({section1val: activity_list[len-1]});
-     }
+      var len = activityList.length
+   
+      if(timeList[len-1] !== undefined){
+      //update section1val to current activity name
+      this.setState({section1val: activityList[len-1]});
      
-    //check same activity + update section2val to duration
-      if(time_list[len-1] != undefined){
-        var cou = 0;
-        for(var i=1; i<=len; i++){
-          if(activity_list[len-1]==activity_list[len-1-i]){
-            cou = i;
-          }
-          else{i=len}
+      //check same activity + update section2val to duration
+      var cou = 0;
+      for(var i=1; i<=len; i++){
+        if(activityList[len-1]===activityList[len-1-i]){
+          cou = i;
         }
-        const current = new Date();
-        const timeNow = current.getSeconds()+current.getMinutes()*60+current.getHours()*3600;
-        if(cou==0){
-          this.setState({section2val: timeDifference(true, timeNow, time_list[len-1])});
-        }
-        else{this.setState({section2val: timeDifference(false, time_list[len-1-cou], time_list[len-1])});}
+        else{i=len}
       }
+      const current = new Date();
+      const timeNow = current.getSeconds()+current.getMinutes()*60+current.getHours()*3600;
+      var timeDiff;
+      if(cou==0){
+        timeDiff = timeDifference(true, timeNow, timeList[len-1]);
+      }
+      else{timeDiff = timeDifference(false, timeList[len-1-cou], timeList[len-1]);}
+      this.setState({section2val: timePretty(timeDiff)});
+      
+      //determine warning message
+      var frfr = messageBanner(timeDiff, activityList[len-1]);
+      console.log(frfr);
+      this.setState({section3val:messageBanner(timeDiff, activityList[len-1])});
+      }
+
+      
+
 
   }
 
@@ -223,7 +214,7 @@ class DashboardPage extends React.Component {
                       <IconWidget
                         bgColor={'danger'}
                         icon={MdThumbDown}
-                        title={<h3 className="text-center"> <strong> Sit too long </strong> </h3>}
+                        title={<h3 className="text-center"> <strong> {this.state.section3val} </strong> </h3>}
                         subtitle={<h4 className="text-center">You should try standing up and relax for 5 minutes.</h4>}
                       />
                       <Card className="flex">
@@ -514,7 +505,7 @@ const genLoadData = () => {
           pointHoverBorderWidth: 2,
           pointRadius: 1,
           pointHitRadius: 10,
-          data: activity_list,
+          data: activityList,
         }
       ],
     };
@@ -550,25 +541,45 @@ const genLoadData = () => {
     var timeDiff;
     if(now){
       timeDiff = compare - latestSeconds
-      console.log("in now");
-      console.log(compare);
-      console.log("in now f");
-      console.log(timeDiff);
     }
-    else{console.log("in else");
+    else{
       var compareSeconds = (parseInt(compare[0].concat(compare[1]))*3600)+(parseInt(compare[3].concat(compare[4]))*60)+(parseInt(compare[6].concat(compare[7])));
       timeDiff = latestSeconds - compareSeconds;
     }
-    console.log("what wrg"+timeDiff);
-    // var timeDiff =4203; //1h 10min 3sec
-    if(timeDiff<60){
-      return("Duration: "+timeDiff+"s");
+    timeDiff =4203; //1h 10min 3sec
+    return(timeDiff)
+  }
+
+  function timePretty(timeSeconds) {
+    if(timeSeconds<60){
+      return("Duration: "+timeSeconds+"s");
     }
-    else if(timeDiff<(60*60)){
-      return("Duration: "+Math.floor(timeDiff/60)+"m"+timeDiff%60+"s");
+    else if(timeSeconds<(60*60)){
+      return("Duration: "+Math.floor(timeSeconds/60)+"m"+timeSeconds%60+"s");
     }
-    else if(timeDiff<(24*60*60)){
-      return("Duration: "+Math.floor(timeDiff/3600)+"h"+Math.floor((timeDiff%3600)/60)+"m"+timeDiff%60+"s")
+    else if(timeSeconds<(24*60*60)){
+      return("Duration: "+Math.floor(timeSeconds/3600)+"h"+Math.floor((timeSeconds%3600)/60)+"m"+timeSeconds%60+"s");
     }
   }
+
+  function messageBanner(timeSeconds, currentActivity) {
+    var message = "";
+    if(currentActivity.toLowerCase().includes("sit") && timeSeconds>(30*60)){
+        message = message.concat("sit too long");  
+    }
+    if(currentActivity.toLowerCase().includes("stand") && timeSeconds>(30*60)){
+      message = message.concat("stand too long");  
+    }
+    if(currentActivity.toLowerCase().includes("hunch")){
+      message = message.concat("and bad posture");  
+    }
+    if(currentActivity.toLowerCase().includes("stretch") && timeSeconds>(30*60)){
+      message = message.concat("good job on the stretch!");  
+    }
+    console.log("in mess "+ message);
+    return(message);
+  }
+
+
+
 export default DashboardPage;
