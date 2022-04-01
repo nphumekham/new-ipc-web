@@ -188,7 +188,7 @@ class DashboardPage extends React.Component {
       var isGoodPosture = checkPosture(activityList[len-1]);
       this.setState({section4val: bgColorFromPosture(isGoodPosture)});
 
-      //gen pie data - list of percent 
+      //gen pie data & banner good vs bad - list of percent 
       resetPercentInDay();
       var couSameDate = 0;
       for(var i=1;i<=len;i++){
@@ -199,8 +199,10 @@ class DashboardPage extends React.Component {
         else{i=len;}
       }
       percentInDay = genPercentInDay(percentInDay);
-      console.log("test now"+percentInDay.good);
-      //section5val - today good vs bad Posture
+      if(percentInDay.good>=percentInDay.bad){
+        console.log("in good bg");
+        this.setState({section5val: bgColorFromPosture(true)});}
+      else{this.setState({section5val: bgColorFromPosture(false)});}
 
 
       }
@@ -334,7 +336,7 @@ class DashboardPage extends React.Component {
                   </Col>
                   <Col className="mb-2 mt-2">
                       <IconWidget
-                      bgColor={'success'}
+                      bgColor={this.state.section5val}
                       icon={MdLightbulbOutline}
                       title={<h4> <strong> Keep up the good posture! </strong></h4>}
                       />
