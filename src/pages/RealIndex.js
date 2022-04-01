@@ -1,6 +1,7 @@
 import database from '../firebase.js';
 import { getDatabase, ref, child, get } from "firebase/database";
 
+import { randomNum } from 'utils/demos';
 // //import pic - there should be more effective way to do this but...
 // import sit_img from 'assets/img/ipc/sit.png';
 // import strech1_img from 'assets/img/ipc/strech1.jpg';
@@ -72,6 +73,22 @@ var list = [];
 var activityList = [];
 var dateList = [];
 var timeList = [];
+
+var defualtCou = {
+  walk: 0,
+  stretch: 0,
+  sit: 0,
+  stand: 0,
+  run: 0
+}
+
+var percentInDay = {
+  walk: 0,
+  stretch: 0,
+  sit: 0,
+  stand: 0,
+  run: 0
+}
 const Period = Array.from(Array(20).keys())
 
 
@@ -112,15 +129,16 @@ class DashboardPage extends React.Component {
     section1val : 'loading..',
     section2val : 'loading..',
     section3val : 'loading..',
-    section4val : 'loading..'
+    section4val : 'loading..',
+    section5val : 'loading..'
   };
  
   getData = () => {
   
     const prediction_array = get(child(dbRef, `prediction`)).then((snapshot) => {
         if (snapshot.exists()) {
-            console.log("im snapshot");
-          console.log(snapshot.val());
+            // console.log("im snapshot");
+          // console.log(snapshot.val());
         
           let predictionVal = snapshot.val();
           let predictionArray = [];
@@ -152,20 +170,21 @@ class DashboardPage extends React.Component {
       this.setState({section1val: activityList[len-1]});
      
       //section2val - check same activity + update duration
-      var cou = 0;
+      var couSameAcc = 0;
       for(var i=1; i<=len; i++){
         if(activityList[len-1]===activityList[len-1-i]){
-          cou = i;
+          couSameAcc = i;
         }
-        else{i=len}
+        else{i=len;}
       }
+      console.log("this sam day"+couSameAcc);
       const current = new Date();
       const timeNow = current.getSeconds()+current.getMinutes()*60+current.getHours()*3600;
       var timeDiff;
-      if(cou==0){
+      if(couSameAcc==0){
         timeDiff = timeDifference(true, timeNow, timeList[len-1]);
       }
-      else{timeDiff = timeDifference(false, timeList[len-1-cou], timeList[len-1]);}
+      else{timeDiff = timeDifference(false, timeList[len-1-couSameAcc], timeList[len-1]);}
       this.setState({section2val: timePretty(timeDiff)});
       
       //section3val - determine warning message
@@ -174,6 +193,24 @@ class DashboardPage extends React.Component {
       //section4val - bg color of message messageBanner
       var isGoodPosture = checkPosture(activityList[len-1]);
       this.setState({section4val: bgColorFromPosture(isGoodPosture)});
+
+      //section5val - list of percent 
+      resetPercentInDay();
+      var couSameDate = 0;
+      for(var i=1;i<=len;i++){
+        if(dateList[len-1]===dateList[len-1-i]){
+          couSameDate = i;
+         if(activityList[len-i].toLowerCase().includes("walk")){percentInDay.walk++;}
+         else if(activityList[len-i].toLowerCase().includes("stretch")){percentInDay.stretch++;}
+         else if(activityList[len-i].toLowerCase().includes("sit")){percentInDay.sit++;}
+         else if(activityList[len-i].toLowerCase().includes("stand")){percentInDay.stand++;}
+         else if(activityList[len-i].toLowerCase().includes("run")){percentInDay.run++;}
+        }
+        else{i=len;}
+      }
+      console.log("before "+ percentInDay.sit);
+      percentInDay = genPercentInDayPieData(percentInDay);
+      console.log("afeter "+ percentInDay.sit);
       }
 
       
@@ -187,11 +224,7 @@ class DashboardPage extends React.Component {
     const primaryColor = getColor('primary');
     const secondaryColor = getColor('secondary');
     return (
-      <Page
-        className="DashboardPage"
-        title="Dashboard"
-        breadcrumbs={[{ name: 'Dashboard', active: true }]}
-      >
+      <Page className="DashboardPage" title="Dashboard" breadcrumbs={[{ name: 'Dashboard', active: true }]}>
 
 {/* box#1 */}
         <Row>
@@ -277,9 +310,12 @@ class DashboardPage extends React.Component {
         <Row>
         <Col xl={6} lg={12} md={12}>
           <Card>
-            <CardHeader><h5><strong>Today Summary</strong></h5></CardHeader>
+            <CardHeader>
+              <h5><strong>Today Summary</strong></h5>
+              <h6>Your activity since 00:00 today</h6>
+              </CardHeader>
             <CardBody>
-              {/* <Pie data={genIpcPieData()} /> */}
+              <Pie data={genPieData()} />
             </CardBody>
           </Card>
         </Col>
@@ -519,7 +555,7 @@ const genLoadData = () => {
     };
   };
 
-
+//functions
   var loadchartOptions = {
     showScale: true,
     pointDot: true,
@@ -554,7 +590,8 @@ const genLoadData = () => {
       var compareSeconds = (parseInt(compare[0].concat(compare[1]))*3600)+(parseInt(compare[3].concat(compare[4]))*60)+(parseInt(compare[6].concat(compare[7])));
       timeDiff = latestSeconds - compareSeconds;
     }
-    timeDiff =4203; //1h 10min 3sec
+    console.log("in time cal "+timeDiff);
+    // timeDiff =4203; //1h 10min 3sec
     return(timeDiff)
   }
 
@@ -579,7 +616,7 @@ const genLoadData = () => {
       message = message.concat("stand too long");  
     }
     if(currentActivity.toLowerCase().includes("hunch")){
-      message = message.concat("and bad posture");  
+      message = message.concat(" and bad posture");  
     }
     if(currentActivity.toLowerCase().includes("stretch") && timeSeconds>(30*60)){
       message = message.concat("good job on the stretch!");  
@@ -603,5 +640,44 @@ const genLoadData = () => {
     return("danger");}
   }
 
+  function resetPercentInDay(){
+    percentInDay.walk=0;
+    percentInDay.stretch=0;
+    percentInDay.sit=0;
+    percentInDay.stand=0;
+    percentInDay.run=0;
+  }
 
+  function genPercentInDayPieData(percentCou){
+    var sum = percentCou.sit + percentCou.walk + percentCou.stand + percentCou.run + percentCou.stretch;
+    percentCou.sit = (percentCou.sit/sum)*100; 
+    percentCou.walk = (percentCou.walk/sum)*100; 
+    percentCou.stand = (percentCou.stand/sum)*100; 
+    percentCou.run = (percentCou.run/sum)*100; 
+    percentCou.stretch = (percentCou.stretch/sum)*100; 
+    console.log("percentCou.sit in func"+percentCou.sit);
+    return(percentCou);
+  }
+ 
+
+  //data for each graph
+  const genPieData = () => {
+    return {
+      datasets: [
+        {
+          data: [percentInDay.walk, percentInDay.stretch, percentInDay.sit, percentInDay.stand, percentInDay.run],
+          backgroundColor: [
+            getColor('primary'),
+            getColor('secondary'),
+            getColor('success'),
+            getColor('info'),
+            getColor('danger'),
+          ],
+          label: 'Dataset 1',
+        },
+      ],
+      labels: ['walk', 'stretch', 'sit', 'stand', 'run'],
+    };
+  };
+  
 export default DashboardPage;
