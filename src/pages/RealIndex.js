@@ -74,20 +74,14 @@ var activityList = [];
 var dateList = [];
 var timeList = [];
 
-var defualtCou = {
-  walk: 0,
-  stretch: 0,
-  sit: 0,
-  stand: 0,
-  run: 0
-}
-
 var percentInDay = {
   walk: 0,
   stretch: 0,
   sit: 0,
   stand: 0,
-  run: 0
+  run: 0,
+  good: 0,
+  bad: 0
 }
 const Period = Array.from(Array(20).keys())
 
@@ -166,7 +160,7 @@ class DashboardPage extends React.Component {
       var len = activityList.length
    
       if(timeList[len-1] !== undefined){
-      //section1val - update to current activity name
+      // section1val - update to current activity name
       this.setState({section1val: activityList[len-1]});
      
       //section2val - check same activity + update duration
@@ -194,23 +188,21 @@ class DashboardPage extends React.Component {
       var isGoodPosture = checkPosture(activityList[len-1]);
       this.setState({section4val: bgColorFromPosture(isGoodPosture)});
 
-      //section5val - list of percent 
+      //gen pie data - list of percent 
       resetPercentInDay();
       var couSameDate = 0;
       for(var i=1;i<=len;i++){
         if(dateList[len-1]===dateList[len-1-i]){
           couSameDate = i;
-         if(activityList[len-i].toLowerCase().includes("walk")){percentInDay.walk++;}
-         else if(activityList[len-i].toLowerCase().includes("stretch")){percentInDay.stretch++;}
-         else if(activityList[len-i].toLowerCase().includes("sit")){percentInDay.sit++;}
-         else if(activityList[len-i].toLowerCase().includes("stand")){percentInDay.stand++;}
-         else if(activityList[len-i].toLowerCase().includes("run")){percentInDay.run++;}
+          countActivityInDay(activityList[len-i]);
         }
         else{i=len;}
       }
-      console.log("before "+ percentInDay.sit);
-      percentInDay = genPercentInDayPieData(percentInDay);
-      console.log("afeter "+ percentInDay.sit);
+      percentInDay = genPercentInDay(percentInDay);
+      console.log("test now"+percentInDay.good);
+      //section5val - today good vs bad Posture
+
+
       }
 
       
@@ -308,51 +300,54 @@ class DashboardPage extends React.Component {
 
 {/* box#3 */}
         <Row>
-        <Col xl={6} lg={12} md={12}>
+        <Col xl={12} lg={12} md={12}>
           <Card>
+
             <CardHeader>
               <h5><strong>Today Summary</strong></h5>
               <h6>Your activity since 00:00 today</h6>
-              </CardHeader>
+            </CardHeader>
+
             <CardBody>
-              <Pie data={genPieData()} />
+              <Row>
+                <Col xl={7} lg={12} md={12}>
+                  <Pie data={genPieData()} />
+                </Col>
+                <Col xl={4} lg={12} md={12}>
+                  <Col className="mb-4 mt-2">
+                      <IconWidget
+                      bgColor="white"
+                      inverse={false}
+                      icon={MdThumbUp}
+                      title="Good Posture"
+                      subtitle={percentInDay.good+"%"}
+                      />
+                  </Col>
+                  <Col className="mb-2 mt-2">
+                      <IconWidget
+                      bgColor="white"
+                      inverse={false}
+                      icon={MdThumbDown}
+                      title="Bad Posture"
+                      subtitle={percentInDay.bad+"%"}
+                      />
+                  </Col>
+                  <Col className="mb-2 mt-2">
+                      <IconWidget
+                      bgColor={'success'}
+                      icon={MdLightbulbOutline}
+                      title={<h4> <strong> Keep up the good posture! </strong></h4>}
+                      />
+                  </Col>
+                </Col>
+                <Col xl={1} lg={12} md={12}></Col>
+              </Row>
             </CardBody>
+
           </Card>
         </Col>
         
-        <Col xl={6} lg={12} md={12}>
-        <Card>
-        <CardHeader><h5><strong>Your Today Stats</strong> </h5> </CardHeader>
-          <CardBody>
-          <Col className="mb-3">
-          <IconWidget
-            bgColor="white"
-            inverse={false}
-            icon={MdThumbUp}
-            title="Good Posture"
-            subtitle="74%"
-          />
-          </Col>
-          <Col className="mb-3">
-          <IconWidget
-            bgColor="white"
-            inverse={false}
-            icon={MdThumbDown}
-            title="Bad Posture"
-            subtitle="26%"
-          />
-          </Col>
-          <Col className="mb-3">
-            <IconWidget
-              bgColor={'success'}
-              icon={MdLightbulbOutline}
-              title={<h4 className="text-center"> <strong> Nice posture! </strong> </h4>}
-              subtitle={<h5 className="text-center">  You did good today  </h5>}
-          />
-          </Col>
-          </CardBody>
-        </Card> 
-        </Col>
+       
         </Row>
 {/* end of box#3 */} 
         <Row>
@@ -646,16 +641,30 @@ const genLoadData = () => {
     percentInDay.sit=0;
     percentInDay.stand=0;
     percentInDay.run=0;
+    percentInDay.good=0;
+    percentInDay.bad=0;
   }
 
-  function genPercentInDayPieData(percentCou){
+function countActivityInDay(activity){
+  if(activity.toLowerCase().includes("straight")){percentInDay.good++;}
+  if(activity.toLowerCase().includes("hunch")){percentInDay.bad++;}
+
+  if(activity.toLowerCase().includes("walk")){percentInDay.walk++;}
+  if(activity.toLowerCase().includes("stretch")){percentInDay.stretch++;percentInDay.good++;}
+  if(activity.toLowerCase().includes("sit")){percentInDay.sit++;}
+  if(activity.toLowerCase().includes("stand")){percentInDay.stand++;}
+  if(activity.toLowerCase().includes("run")){percentInDay.run++;}
+}
+
+  function genPercentInDay(percentCou){
     var sum = percentCou.sit + percentCou.walk + percentCou.stand + percentCou.run + percentCou.stretch;
     percentCou.sit = (percentCou.sit/sum)*100; 
     percentCou.walk = (percentCou.walk/sum)*100; 
     percentCou.stand = (percentCou.stand/sum)*100; 
     percentCou.run = (percentCou.run/sum)*100; 
     percentCou.stretch = (percentCou.stretch/sum)*100; 
-    console.log("percentCou.sit in func"+percentCou.sit);
+    percentCou.good = ((percentCou.good/sum)*100).toFixed(0); 
+    percentCou.bad = ((percentCou.bad/sum)*100).toFixed(0);
     return(percentCou);
   }
  
