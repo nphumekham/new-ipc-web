@@ -73,7 +73,7 @@ var list = [];
 var activityList = [];
 var dateList = [];
 var timeList = [];
-
+var tempo = [];
 var percentInDay = {
   walk: 0,
   stretch: 0,
@@ -207,26 +207,32 @@ class DashboardPage extends React.Component {
       var indexSameDay = len-1;
       
       //cal today and weekly data
+tempo=[];
+console.log("before "+indexSameDay);
       for(var day=7;day>0;day--){
         for(var j=indexSameDay;j>=0;j--){
+          // console.log("in for "+indexSameDay);
           if(dateList[indexSameDay]===dateList[j]){
             if(!weeklyLabel.includes(dateList[j])){weeklyLabel.push(dateList[j])}
             if(day==7){
-              countGoodBad(day, activityList[indexSameDay+1-j]);
-              countActivityInDay(activityList[indexSameDay+1-j]);
+              countGoodBad(day, activityList[j]);
+              countActivityInDay(activityList[j]);
             }
             else{
-              countGoodBad(day, activityList[indexSameDay+1-j]);
+              countGoodBad(day, activityList[j]);
             }
           }
           else{
-            
             indexSameDay = j;
+            console.log("in else "+indexSameDay);
             j = -1;
           }
         }
       }
       
+console.log("please1 "+weeklyBadPosture.day1);
+console.log("please1 "+weeklyBadPosture.day2);
+console.log("please1 "+weeklyBadPosture.day3);
       for(var index=0;index<3;index++){
         var temp=weeklyLabel[index];
         weeklyLabel[index] = weeklyLabel[6-index];
@@ -635,41 +641,47 @@ class DashboardPage extends React.Component {
   }
 
   function countGoodBad(day, activity){
+    console.log("countGoodBad"+day);
+
     if(day === 7){
+      
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.today++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.today++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.today++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.today++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.today++;}
+      
     }
     else if(day === 6){
+      tempo.push(activity.toLowerCase());
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day6++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day6++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day6++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day6++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day6++;}
     }
     else if(day === 5){
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day5++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day5++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day5++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day5++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day5++;}
     }
     else if(day === 4){
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day4++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day4++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day4++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day4++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day4++;}
     }
     else if(day === 3){
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day3++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day3++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day3++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day3++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day3++;}
     }
     else if(day === 2){
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day2++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day2++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day2++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day2++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day2++;}
     }
     else if(day === 1){
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day1++;}
-      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day1++;}
-      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day1++;}
+      else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day1++;}
+      else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day1++;}
     }
+
   }
 
 
