@@ -137,8 +137,9 @@ class DashboardPage extends React.Component {
     section3val : 'loading..',
     section4val : 'loading..',
     section5val : 'loading..',
-    section6val : 'loading...',
-    section7val : 'loading...'
+    section6val : 'loading..',
+    section7val : 'loading..',
+    section8val : 'loading..'
   };
  
   getData = () => {
@@ -238,8 +239,13 @@ tempo=[];
       percentInDay = genPercentInDay(percentInDay);
       if(percentInDay.good>=percentInDay.bad){
         console.log("in good bg");
-        this.setState({section5val: bgColorFromPosture(true)});}
-      else{this.setState({section5val: bgColorFromPosture(false)});}
+        this.setState({section5val: bgColorFromPosture(true)});
+        this.setState({section8val: "Keep up the good posture"});
+      }
+      else{
+        this.setState({section5val: bgColorFromPosture(false)});
+        this.setState({section8val: "Be mindfulness on your posture tomorow."});
+      }
 
       //section6val - In-baner sugestion
       this.setState({section6val: messageBannerSuggestion(timeDiff, activityList[len-1])});
@@ -341,7 +347,7 @@ tempo=[];
                       <IconWidget
                       bgColor={this.state.section5val}
                       icon={MdLightbulbOutline}
-                      title={<h4> <strong> Keep up the good posture! </strong></h4>}
+                      title={<h4> <strong> {this.state.section8val} </strong></h4>}
                       />
                   </Col>
                 </Col>
