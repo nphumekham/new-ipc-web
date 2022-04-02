@@ -136,7 +136,9 @@ class DashboardPage extends React.Component {
     section2val : 'loading..',
     section3val : 'loading..',
     section4val : 'loading..',
-    section5val : 'loading..'
+    section5val : 'loading..',
+    section6val : 'loading...',
+    section7val : 'loading...'
   };
  
   getData = () => {
@@ -208,10 +210,8 @@ class DashboardPage extends React.Component {
       
       //cal today and weekly data
 tempo=[];
-console.log("before "+indexSameDay);
       for(var day=7;day>0;day--){
         for(var j=indexSameDay;j>=0;j--){
-          // console.log("in for "+indexSameDay);
           if(dateList[indexSameDay]===dateList[j]){
             if(!weeklyLabel.includes(dateList[j])){weeklyLabel.push(dateList[j])}
             if(day==7){
@@ -229,10 +229,6 @@ console.log("before "+indexSameDay);
           }
         }
       }
-      
-console.log("please1 "+weeklyBadPosture.day1);
-console.log("please1 "+weeklyBadPosture.day2);
-console.log("please1 "+weeklyBadPosture.day3);
       for(var index=0;index<3;index++){
         var temp=weeklyLabel[index];
         weeklyLabel[index] = weeklyLabel[6-index];
@@ -245,7 +241,10 @@ console.log("please1 "+weeklyBadPosture.day3);
         this.setState({section5val: bgColorFromPosture(true)});}
       else{this.setState({section5val: bgColorFromPosture(false)});}
 
-      
+      //section6val - In-baner sugestion
+      this.setState({section6val: messageBannerSuggestion(timeDiff, activityList[len-1])});
+      //section7val - realtime recomendation
+      this.setState({section7val:messageRealtimeSuggestion(timeDiff, activityList[len-1])});
       }
 
     
@@ -287,15 +286,12 @@ console.log("please1 "+weeklyBadPosture.day3);
                         bgColor={this.state.section4val}
                         icon={MdThumbDown}
                         title={<h3 className="text-center"> <strong> {this.state.section3val} </strong> </h3>}
-                        subtitle={<h4 className="text-center">You should try standing up and relax for 5 minutes.</h4>}
+                        subtitle={<h4 className="text-center">{this.state.section6val}</h4>}
                       />
                       <Card className="flex">
                         <CardBody>
                           <CardTitle><h4><strong>Real time suggestion:</strong></h4></CardTitle>
-                          <CardText>
-                          You have been stting for to long, that is unhealty for your lower back and blood circulation in
-                          your appendage. We suggest to try standing up and relax your body for at least 5 minutes. 
-                          </CardText>
+                          <CardText>{this.state.section7val}</CardText>
                         </CardBody>
                       </Card>
                     </Col>
@@ -306,40 +302,6 @@ console.log("please1 "+weeklyBadPosture.day3);
         </Row>
 {/* end of box#1 */}  
 
-{/* box#2 */}
-        <Row> 
-        <Col lg="12" md="12" sm="12" xs="12">
-        <Card>
-        <CardHeader><h5><strong>Today You Should...</strong> </h5> <h6>This is generated base on your past 7 days activities. Here is what we suggest you to do today.</h6></CardHeader>
-          <CardBody>
-                <Col md={12}>
-                  <Row>
-                    <Col lg="6" md="12" sm="12" xs="12">
-                      <Button color="primary" size="lg" block active>
-                      <strong>Have a good walk at least 10 minutes.</strong>
-                      </Button>
-                      <Button color="primary" size="lg" block active>
-                      <strong>Stretch your upper-body for 10 minutes</strong> <Badge color="success" pill className="mr-1">DONE</Badge><br></br> Check the recommendation to see our tailored stretch for you. 
-                      </Button>
-                      <Button color="primary" size="lg" block active>
-                      <strong>Jog at least 20 minutes</strong> <Badge color="success" pill className="mr-1">DONE</Badge>
-                      </Button>
-                    </Col>
-                    <Col lg="6" md="12" sm="12" xs="12">
-                      <Button color="warning" size="lg" block >
-                      <strong>Not hunch your back for more than 10 mins</strong> <Badge color="danger" pill className="mr-1">FAIL</Badge>
-                      </Button>
-                      <Button color="primary" size="lg" block active>
-                      <strong>Stand up and walk around every 2 hours</strong> <br></br>We notice that you've been stting for too long.
-                      </Button>
-                    </Col>
-                  </Row>
-                </Col>
-          </CardBody>
-        </Card> 
-        </Col>
-        </Row>
-{/* end of box#2 */} 
 
 {/* box#3 */}
         <Row>
@@ -407,6 +369,43 @@ console.log("please1 "+weeklyBadPosture.day3);
 
         </Row>
 {/* end of box#4 */} 
+
+{/* box#2 */}
+<Row> 
+        <Col lg="12" md="12" sm="12" xs="12">
+        <Card>
+        <CardHeader><h5><strong>Today You Should...</strong> </h5> <h6>This is generated base on your past 7 days activities. Here is what we suggest you to do today.</h6></CardHeader>
+          <CardBody>
+                <Col md={12}>
+                  <Row>
+                    <Col lg="6" md="12" sm="12" xs="12">
+                      <Button color="primary" size="lg" block active>
+                      <strong>Have a good walk at least 10 minutes.</strong>
+                      </Button>
+                      <Button color="primary" size="lg" block active>
+                      <strong>Stretch your upper-body for 10 minutes</strong> <Badge color="success" pill className="mr-1">DONE</Badge><br></br> Check the recommendation to see our tailored stretch for you. 
+                      </Button>
+                      <Button color="primary" size="lg" block active>
+                      <strong>Jog at least 20 minutes</strong> <Badge color="success" pill className="mr-1">DONE</Badge>
+                      </Button>
+                    </Col>
+                    <Col lg="6" md="12" sm="12" xs="12">
+                      <Button color="warning" size="lg" block >
+                      <strong>Not hunch your back for more than 10 mins</strong> <Badge color="danger" pill className="mr-1">FAIL</Badge>
+                      </Button>
+                      <Button color="primary" size="lg" block active>
+                      <strong>Stand up and walk around every 2 hours</strong> <br></br>We notice that you've been stting for too long.
+                      </Button>
+                    </Col>
+                  </Row>
+                </Col>
+          </CardBody>
+        </Card> 
+        </Col>
+        </Row>
+{/* end of box#2 */} 
+
+
         <Row>
         <Col xl={12} lg={12} md={12}>
         <CardHeader><h5><strong>Recommendations</strong></h5><h6>Base on your activity preference.</h6></CardHeader>
@@ -538,16 +537,34 @@ console.log("please1 "+weeklyBadPosture.day3);
   function messageBanner(timeSeconds, currentActivity) {
     var message = "";
     if(currentActivity.toLowerCase().includes("sit") && timeSeconds>(30*60)){
-        message = message.concat("sit too long");  
+        message = message.concat("Sit too long");
     }
     if(currentActivity.toLowerCase().includes("stand") && timeSeconds>(30*60)){
-      message = message.concat("stand too long");  
+      message = message.concat("Stand too long");
+    }
+    if(currentActivity.toLowerCase().includes("walk") && timeSeconds>(120*60)){
+      message = message.concat("Walk too long");
+    }
+    if(currentActivity.toLowerCase().includes("run") && timeSeconds>(120*60)){
+      message = message.concat("Run too long");
+    }
+    if(currentActivity.toLowerCase().includes("sit") && timeSeconds<=(30*60)){
+      message = message.concat("Sit");
+    }
+    if(currentActivity.toLowerCase().includes("stand") && timeSeconds<=(30*60)){
+      message = message.concat("Stand");
+    }
+    if(currentActivity.toLowerCase().includes("walk") && timeSeconds<=(30*60)){
+      message = message.concat("Walk");
+    }
+    if(currentActivity.toLowerCase().includes("run") && timeSeconds<=(30*60)){
+      message = message.concat("Run");
     }
     if(currentActivity.toLowerCase().includes("hunch")){
-      message = message.concat(" and bad posture");  
+      message = message.concat(" in bad posture");
     }
     if(currentActivity.toLowerCase().includes("stretch") && timeSeconds>(30*60)){
-      message = message.concat("good job on the stretch!");  
+      message = message.concat("good job on the stretch!");
     }
     console.log("in mess "+ message);
     return(message);
@@ -651,7 +668,7 @@ console.log("please1 "+weeklyBadPosture.day3);
       
     }
     else if(day === 6){
-      tempo.push(activity.toLowerCase());
+      // tempo.push(activity.toLowerCase());
       if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day6++;}
       else if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day6++;}
       else if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day6++;}
@@ -684,7 +701,62 @@ console.log("please1 "+weeklyBadPosture.day3);
 
   }
 
+  function messageRealtimeSuggestion(timeSeconds, currentActivity) {
+    var message = "";
+    if(currentActivity.toLowerCase().includes("straight")&& timeSeconds<=(30*60)){
+      message = ("Keep going! You already stay in a good posture.")
+    }
+    if(currentActivity.toLowerCase().includes("hunch")&& timeSeconds<=(30*60)){
+      message = ("You have been staying in bad posture. This can lead to excess pressure on the spine, causing pain. We sugest you to fix your posture.")
+    }
+    if(currentActivity.toLowerCase().includes("sit") && timeSeconds>(30*60)){
+        message = message.concat("You have been stting for to long, that is unhealty for your lower back and blood circulation in your appendage. Your body is not meant for long periods of inactivity. We suggest to try standing up and relax your body for at least 5 minutes.");
+    }
+    if(currentActivity.toLowerCase().includes("walk") && timeSeconds>(30*60)){
+      message = message.concat("You have been walking for too long! This could damange your back. We suggest you to straighten your back while walking");
+    }
+    if(currentActivity.toLowerCase().includes("stand") && timeSeconds>(30*60)){
+      message = message.concat("Your body is not meant for long periods of inactivity. Our bodies can adapt to almost all physical activities we put ourselves through. With inactivity, the adaptation of the body to this inactivity is what causes hunch back posture problems to arise.");
+    }
+    if(currentActivity.toLowerCase().includes("stretch") && timeSeconds>(30*60)){
+      message = message.concat("Strecting is good for");
+    }
+    if(timeSeconds>(30*60)){
+      message = message.concat(" And don't forget to change your activity from time to time")
+    }
+    if(timeSeconds<=(30*60)){
+      message = message.concat(" And keep moving around to aviod inactivity.")
+    }
 
+    return(message);
+  } 
+
+  function messageBannerSuggestion(timeSeconds, currentActivity) {
+    var message = "";
+    if(currentActivity.toLowerCase().includes("straight")){
+      message = ("Nice one!")
+    }
+    if(currentActivity.toLowerCase().includes("hunch")){
+      message = ("Heads up! Time to fix your posture.")
+    }
+    if(currentActivity.toLowerCase().includes("sit") && timeSeconds>(30*60)){
+        message = message.concat("Let's stand up and have a short walk.");
+    }
+    if(currentActivity.toLowerCase().includes("stand") && timeSeconds>(30*60)){
+      message = message.concat(" Let's move around and get some fresh air.");
+    }
+    if(currentActivity.toLowerCase().includes("walk") && timeSeconds>(30*60)){
+      message = message.concat(" Let's find a place you can sit down.");
+    }
+    if(currentActivity.toLowerCase().includes("run") && timeSeconds>(60*60)){
+      message = message.concat(" Let's have a break, long cardio is unhealty for your heart.");
+    }
+    if(currentActivity.toLowerCase().includes("stretch") && timeSeconds>(30*60)){
+      message = ("Good choice! Let's keep stretching");
+    }
+
+    return(message);
+  }
   //data for each graph
   const genPieData = () => {
     return {
