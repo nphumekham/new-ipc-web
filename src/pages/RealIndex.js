@@ -83,6 +83,26 @@ var percentInDay = {
   good: 0,
   bad: 0
 }
+var weeklyGoodPosture={
+  day1:0,
+  day2:0,
+  day3:0,
+  day4:0,
+  day5:0,
+  day6:0,
+  today:0
+}
+var weeklyBadPosture={
+  day1:0,
+  day2:0,
+  day3:0,
+  day4:0,
+  day5:0,
+  day6:0,
+  today:0
+}
+var weeklyLabel=[];
+
 const Period = Array.from(Array(20).keys())
 
 
@@ -94,14 +114,6 @@ const ipctodosData = [
   { id: 4, title: "You should jogg at least 3 time this week. YOU CAN DO IT!"},
   { id: 5, title: "Be mindfulness on your posture."},
 ];
-
-
-const today = new Date();
-const lastWeek = new Date(
-  today.getFullYear(),
-  today.getMonth(),
-  today.getDate() - 7,
-);
 
 
 class DashboardPage extends React.Component {
@@ -171,11 +183,11 @@ class DashboardPage extends React.Component {
         }
         else{i=len;}
       }
-      console.log("this sam day"+couSameAcc);
       const current = new Date();
+
       const timeNow = current.getSeconds()+current.getMinutes()*60+current.getHours()*3600;
       var timeDiff;
-      if(couSameAcc==0){
+      if(couSameAcc===0){
         timeDiff = timeDifference(true, timeNow, timeList[len-1]);
       }
       else{timeDiff = timeDifference(false, timeList[len-1-couSameAcc], timeList[len-1]);}
@@ -190,22 +202,47 @@ class DashboardPage extends React.Component {
 
       //gen pie data & banner good vs bad - list of percent 
       resetPercentInDay();
-      var couSameDate = 0;
-      for(var i=1;i<=len;i++){
-        if(dateList[len-1]===dateList[len-1-i]){
-          couSameDate = i;
-          countActivityInDay(activityList[len-i]);
+      resetWeeklyData();
+      weeklyLabel=[];
+      var indexSameDay = len-1;
+      
+      //cal today and weekly data
+      for(var day=7;day>0;day--){
+        for(var j=indexSameDay;j>=0;j--){
+          if(dateList[indexSameDay]===dateList[j]){
+            if(!weeklyLabel.includes(dateList[j])){weeklyLabel.push(dateList[j])}
+            if(day==7){
+              countGoodBad(day, activityList[indexSameDay+1-j]);
+              countActivityInDay(activityList[indexSameDay+1-j]);
+            }
+            else{
+              countGoodBad(day, activityList[indexSameDay+1-j]);
+            }
+          }
+          else{
+            
+            indexSameDay = j;
+            j = -1;
+          }
         }
-        else{i=len;}
       }
+      
+      for(var index=0;index<3;index++){
+        var temp=weeklyLabel[index];
+        weeklyLabel[index] = weeklyLabel[6-index];
+        weeklyLabel[6-index] = temp;
+      }
+      console.log("know list"+ weeklyLabel);
       percentInDay = genPercentInDay(percentInDay);
       if(percentInDay.good>=percentInDay.bad){
         console.log("in good bg");
         this.setState({section5val: bgColorFromPosture(true)});}
       else{this.setState({section5val: bgColorFromPosture(false)});}
 
-
+      
       }
+
+    
 
       
 
@@ -215,8 +252,6 @@ class DashboardPage extends React.Component {
   
 
   render() {
-    const primaryColor = getColor('primary');
-    const secondaryColor = getColor('secondary');
     return (
       <Page className="DashboardPage" title="Dashboard" breadcrumbs={[{ name: 'Dashboard', active: true }]}>
 
@@ -352,77 +387,20 @@ class DashboardPage extends React.Component {
        
         </Row>
 {/* end of box#3 */} 
+
+{/* box#4 */}
         <Row>
-        <Col xl={6} lg={12} md={12}>
+        <Col xl={12} lg={12} md={12}>
             <Card className="mb-3">
               <CardHeader><h5><strong>Activity History</strong></h5></CardHeader>
-              <CardBody>
-                {/* <Line data={genWeeklyData()} options={weeklyChartOption} /> */}
-              </CardBody>
+            <CardBody>
+              <Bar data={genLineData()} />
+            </CardBody>
             </Card>
         </Col>
 
-        <Col xl={6} lg={12} md={12}>
-
-        <Card>
-        <CardHeader><h5><strong>Weekly Progress</strong></h5><h6>Base on World Health Organization Physical Activity Recommendations.</h6></CardHeader>
-          <Row>
-            <Col md="12" sm="12" xs="12">
-            <NumberWidget
-              title="Walk"
-              number="100 Minutes"
-              color="primary"
-              progress={{
-                value: 75,
-                label: 'Completeness',
-              }}
-            />
-            </Col>
-          </Row>
-          <Row>
-          <Col md="12" sm="12" xs="12">
-            <NumberWidget
-              title="Run"
-              number="75 Minutes"
-              color="info"
-              progress={{
-                value: 40,
-                label: 'Completeness',
-              }}
-            />
-          </Col>
-          </Row>
-          
-          <Row>
-          <Col md="12" sm="12" xs="12">
-          <NumberWidget
-              title="Stretch"
-              number="45 Minutes"
-              color="success"
-              progress={{
-                value: 60,
-                label: 'Completeness',
-              }}
-            />
-          </Col>
-          </Row>
-          <Row>
-          <Col md="12" sm="12" xs="12">
-          <NumberWidget
-              title="Light Movement"
-              number="300 Minutes"
-              color="danger"
-              progress={{
-                value: 40,
-                label: 'Completeness',
-              }}
-            />
-          </Col>
-          </Row>
-          </Card>
-          </Col>
         </Row>
-        
+{/* end of box#4 */} 
         <Row>
         <Col xl={12} lg={12} md={12}>
         <CardHeader><h5><strong>Recommendations</strong></h5><h6>Base on your activity preference.</h6></CardHeader>
@@ -523,60 +501,7 @@ class DashboardPage extends React.Component {
 }
 
 
-const genLoadData = () => {
-    return {
-      labels: Period,
-      datasets: [
-        {
-          label: 'Distance',
-          fill: false,
-          lineTension: 0.1,
-          backgroundColor: 'rgba(75,192,192,0.4)',
-          borderColor: 'rgba(75,192,192,1)',
-          borderCapStyle: 'butt',
-          borderDash: [],
-          borderDashOffset: 0.0,
-          borderJoinStyle: 'miter',
-          pointBorderColor: 'rgba(75,192,192,1)',
-          pointBackgroundColor: '#fff',
-          pointBorderWidth: 1,
-          pointHoverRadius: 5,
-          pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-          pointHoverBorderColor: 'rgba(220,220,220,1)',
-          pointHoverBorderWidth: 2,
-          pointRadius: 1,
-          pointHitRadius: 10,
-          data: activityList,
-        }
-      ],
-    };
-  };
-
 //functions
-  var loadchartOptions = {
-    showScale: true,
-    pointDot: true,
-    scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero: true,
-          min: 0,
-          max: 1000
-        },
-        scaleLabel: {
-          display: true,
-          labelString: 'Distance(cm)'
-        }
-      }],
-      xAxes: [{
-        scaleLabel: {
-          display: true,
-          labelString: 'Recorded Data (from oldest -> newest)'
-        }
-      }]
-    }
-  }
-
   function timeDifference(now, compare, latest){
     var latestSeconds = (parseInt(latest[0].concat(latest[1]))*3600)+(parseInt(latest[3].concat(latest[4]))*60)+(parseInt(latest[6].concat(latest[7])));
     var timeDiff;
@@ -647,7 +572,24 @@ const genLoadData = () => {
     percentInDay.bad=0;
   }
 
-function countActivityInDay(activity){
+  function resetWeeklyData(){
+    weeklyGoodPosture.day1=0;
+    weeklyGoodPosture.day2=0;
+    weeklyGoodPosture.day3=0;
+    weeklyGoodPosture.day4=0;
+    weeklyGoodPosture.day5=0;
+    weeklyGoodPosture.day6=0;
+    weeklyGoodPosture.today=0;
+    weeklyBadPosture.day1=0;
+    weeklyBadPosture.day2=0;
+    weeklyBadPosture.day3=0;
+    weeklyBadPosture.day4=0;
+    weeklyBadPosture.day5=0;
+    weeklyBadPosture.day6=0;
+    weeklyBadPosture.today=0;
+  }
+
+  function countActivityInDay(activity){
   if(activity.toLowerCase().includes("straight")){percentInDay.good++;}
   if(activity.toLowerCase().includes("hunch")){percentInDay.bad++;}
 
@@ -656,10 +598,11 @@ function countActivityInDay(activity){
   if(activity.toLowerCase().includes("sit")){percentInDay.sit++;}
   if(activity.toLowerCase().includes("stand")){percentInDay.stand++;}
   if(activity.toLowerCase().includes("run")){percentInDay.run++;}
-}
+  }
 
   function genPercentInDay(percentCou){
     var sum = percentCou.sit + percentCou.walk + percentCou.stand + percentCou.run + percentCou.stretch;
+    console.log("in func sum"+sum);
     percentCou.sit = (percentCou.sit/sum)*100; 
     percentCou.walk = (percentCou.walk/sum)*100; 
     percentCou.stand = (percentCou.stand/sum)*100; 
@@ -669,7 +612,66 @@ function countActivityInDay(activity){
     percentCou.bad = ((percentCou.bad/sum)*100).toFixed(0);
     return(percentCou);
   }
- 
+
+  function isWithinWeek(current, check){
+    // "2022-04-02"
+    var currentDate = parseInt(current[8].concat(current[9]));
+    var currentMonth = parseInt(current[5].concat(current[6]));
+    var checkDate = parseInt(check[8].concat(check[9]));
+    var checkMonth = parseInt(check[5].concat(check[6]));
+
+    //too lazy,,, assume 31 day a month
+    if(currentDate<7){
+      if(currentMonth===checkMonth){return (true);}
+      else{
+        var left = 7 - currentDate;
+        if(checkDate>(31-left)){return (true);}
+      }
+    }
+    else{
+      if(checkDate>(currentDate-7)){return (true);}
+    }
+    return (false);
+  }
+
+  function countGoodBad(day, activity){
+    if(day === 7){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.today++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.today++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.today++;}
+    }
+    else if(day === 6){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day6++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day6++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day6++;}
+    }
+    else if(day === 5){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day5++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day5++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day5++;}
+    }
+    else if(day === 4){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day4++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day4++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day4++;}
+    }
+    else if(day === 3){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day3++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day3++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day3++;}
+    }
+    else if(day === 2){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day2++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day2++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day2++;}
+    }
+    else if(day === 1){
+      if(activity.toLowerCase().includes("straight")){weeklyGoodPosture.day1++;}
+      if(activity.toLowerCase().includes("hunch")){weeklyBadPosture.day1++;}
+      if(activity.toLowerCase().includes("stretch")){weeklyGoodPosture.day1++;}
+    }
+  }
+
 
   //data for each graph
   const genPieData = () => {
@@ -690,5 +692,142 @@ function countActivityInDay(activity){
       labels: ['walk', 'stretch', 'sit', 'stand', 'run'],
     };
   };
+
+  // const genWeeklyData = () => {
+  //   return {
+  //     labels: Period,
+  //     datasets: [{
+  //       label: 'Bad Posture',
+  //       fill: true,
+  //       lineTension: 0.1,
+  //       backgroundColor: 'rgba(140,12,20,0.4)',
+  //       borderColor: 'rgba(140,12,20,1)',
+  //       borderCapStyle: 'butt',
+  //       borderDash: [],
+  //       borderDashOffset: 0.0,
+  //       borderJoinStyle: 'miter',
+  //       pointBorderColor: 'rgba(140,12,20,1)',
+  //       pointBackgroundColor: '#fff',
+  //       pointBorderWidth: 1,
+  //       pointHoverRadius: 5,
+  //       pointHoverBackgroundColor: 'rgba(140,12,20,1)',
+  //       pointHoverBorderColor: 'rgba(220,220,220,1)',
+  //       pointHoverBorderWidth: 2,
+  //       pointRadius: 1,
+  //       pointHitRadius: 10,
+  //       data: flex_c_list,
+  //     },
+  //       {
+  //         label: 'Good Posture',
+  //         fill: true,
+  //         lineTension: 0.1,
+  //         backgroundColor: 'rgba(15,192,10,0.4)',
+  //         borderColor: 'rgba(15,192,10,1)',
+  //         borderCapStyle: 'butt',
+  //         borderDash: [],
+  //         borderDashOffset: 0.0,
+  //         borderJoinStyle: 'miter',
+  //         pointBorderColor: 'rgba(15,192,10,1)',
+  //         pointBackgroundColor: '#fff',
+  //         pointBorderWidth: 1,
+  //         pointHoverRadius: 5,
+  //         pointHoverBackgroundColor: 'rgba(15,192,10,1)',
+  //         pointHoverBorderColor: 'rgba(220,220,220,1)',
+  //         pointHoverBorderWidth: 2,
+  //         pointRadius: 1,
+  //         pointHitRadius: 10,
+  //         data: flex_l_list,
+  //       },
+  //       {
+  //         label: 'Stretch',
+  //         fill: true,
+  //         lineTension: 0.1,
+  //         backgroundColor: 'rgba(75,200,192,0.4)',
+  //         borderColor: 'rgba(75,200,192,1)',
+  //         borderCapStyle: 'butt',
+  //         borderDash: [],
+  //         borderDashOffset: 0.0,
+  //         borderJoinStyle: 'miter',
+  //         pointBorderColor: 'rgba(75,200,192,1)',
+  //         pointBackgroundColor: '#fff',
+  //         pointBorderWidth: 1,
+  //         pointHoverRadius: 5,
+  //         pointHoverBackgroundColor: 'rgba(75,200,192,1)',
+  //         pointHoverBorderColor: 'rgba(220,220,220,1)',
+  //         pointHoverBorderWidth: 2,
+  //         pointRadius: 1,
+  //         pointHitRadius: 10,
+  //         data: flex_r_list,
+  //       }
+        
+  //     ],
+  //   };
+  // };
+
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+  const genLineData = (moreData = {}, moreData2 = {}) => {
+    return {
+      labels: weeklyLabel,
+      datasets: [
+        {
+          label: 'Good Posture',
+          backgroundColor: getColor('primary'),
+          borderColor: getColor('primary'),
+          borderWidth: 1,
+          data: [
+            weeklyGoodPosture.day1,
+            weeklyGoodPosture.day2,
+            weeklyGoodPosture.day3,
+            weeklyGoodPosture.day4,
+            weeklyGoodPosture.day5,
+            weeklyGoodPosture.day6,
+            weeklyGoodPosture.today,
+          ],
+          ...moreData,
+        },
+        {
+          label: 'Bad Posture',
+          backgroundColor: getColor('secondary'),
+          borderColor: getColor('secondary'),
+          borderWidth: 1,
+          data: [
+            weeklyBadPosture.day1,
+            weeklyBadPosture.day2,
+            weeklyBadPosture.day3,
+            weeklyBadPosture.day4,
+            weeklyBadPosture.day5,
+            weeklyBadPosture.day6,
+            weeklyBadPosture.today,
+          ],
+          ...moreData2,
+        },
+      ],
+    };
+  };
+
+  var weeklyChartOption = {
+    showScale: true,
+    pointDot: true,
+    scales: {
+      yAxes: [{
+        ticks: {
+          beginAtZero: true,
+          min: 2000,
+          max: 3000
+        },
+        scaleLabel: {
+          display: true,
+          labelString: 'Minute'
+        }
+      }],
+      xAxes: [{
+        scaleLabel: {
+          display: true,
+          labelString: 'Date'
+        }
+      }]
+    }
+  }
+  
   
 export default DashboardPage;
