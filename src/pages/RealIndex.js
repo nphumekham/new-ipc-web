@@ -3,7 +3,7 @@ import { getDatabase, ref, child, get } from "firebase/database";
 
 import { randomNum } from 'utils/demos';
 // //import pic - there should be more effective way to do this but...
-// import sit_img from 'assets/img/ipc/sit.png';
+ import sit_h_img from 'assets/img/ipc/sit-h.png';
 // import strech1_img from 'assets/img/ipc/strech1.jpg';
 // import strech2_img from 'assets/img/ipc/strech2.jpg';
 // import strech3_img from 'assets/img/ipc/strech3.jpg';
@@ -267,7 +267,7 @@ tempo=[];
                 <Col md={4} sm={6} xs={6} className="m-3">
                     <CardImg
                       className="card-img-left"
-                    //   src={sit_img}
+                       src={sit_h_img}
                       style={{ width: 'auto', height: 300, display: 'block', margin: 'auto', marginBottom: '20px'}}
                     />
                     <CardTitle>
