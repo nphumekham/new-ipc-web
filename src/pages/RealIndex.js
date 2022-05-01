@@ -414,7 +414,7 @@ tempo=[];
 
         <Row>
         <Col xl={12} lg={12} md={12}>
-        <CardHeader><h5><strong>Recommendations</strong></h5><h6>Base on your activity preference.</h6></CardHeader>
+        <CardHeader><h5><strong>Knowledge Blog</strong></h5><h6></h6></CardHeader>
           <Card className="flex-row">
             <CardImg
               className="card-img-left"
