@@ -376,7 +376,7 @@ tempo=[];
         </Row>
 {/* end of box#4 */} 
 
-{/* box#2 */}
+-{/* box#2 */}
 <Row> 
         <Col lg="12" md="12" sm="12" xs="12">
         <Card>
@@ -410,7 +410,6 @@ tempo=[];
         </Col>
         </Row>
 {/* end of box#2 */} 
-
 
         <Row>
         <Col xl={12} lg={12} md={12}>
